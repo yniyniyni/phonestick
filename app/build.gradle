@@ -5,12 +5,30 @@ plugins {
 }
 
 def getVersionName = { ->
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'describe', '--tags'
-        standardOutput = stdout
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'describe', '--tags'
+            standardOutput = stdout
+            errorOutput = new ByteArrayOutputStream()
+        }
+        def name = stdout.toString().trim()
+        if (name) return name
+    } catch (Exception ignored) {
+        // No tags (or git unavailable) — fall back below
     }
-    return stdout.toString().trim()
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-parse', '--short', 'HEAD'
+            standardOutput = stdout
+            errorOutput = new ByteArrayOutputStream()
+        }
+        def hash = stdout.toString().trim()
+        if (hash) return "0.0-g${hash}"
+    } catch (Exception ignored) {
+    }
+    return "0.0-dev"
 }
 
 android {
@@ -22,10 +40,21 @@ android {
         versionCode 8
         versionName getVersionName()
     }
+    signingConfigs {
+        // Sign release builds with the standard Android debug keystore so the
+        // APK is installable. Swap this out for a real keystore for distribution.
+        release {
+            storeFile file("${System.getProperty('user.home')}/.android/debug.keystore")
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     sourceSets {
@@ -40,7 +69,7 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'eu.chainfire:libsuperuser:1.0.0.+'
+    implementation 'com.github.Chainfire:libsuperuser:1.1.1'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
 }
 repositories {
