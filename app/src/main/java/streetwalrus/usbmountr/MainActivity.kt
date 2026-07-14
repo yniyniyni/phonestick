@@ -3,17 +3,15 @@ package streetwalrus.usbmountr
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.elevation.SurfaceColors
@@ -39,7 +37,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setSupportActionBar(findViewById<MaterialToolbar>(R.id.toolbar))
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -67,25 +64,15 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<MaterialCardView>(R.id.row_ro).setOnClickListener { roSwitch.toggle() }
 
-        updateImageFileRow()
-        updateStatusHero()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.menu_licenses -> {
-                val intent = Intent(this, LicenseActivity::class.java)
-                startActivity(intent)
-            }
-            else -> return super.onOptionsItemSelected(item)
+        findViewById<View>(R.id.footer_licenses).setOnClickListener {
+            startActivity(Intent(this, LicenseActivity::class.java))
+        }
+        findViewById<View>(R.id.footer_github).setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.github_url))))
         }
 
-        return true
+        updateImageFileRow()
+        updateStatusHero()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {

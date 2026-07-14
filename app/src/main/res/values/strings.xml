@@ -4,6 +4,8 @@
     <string name="licenses">Licenses</string>
     <string name="licenses_upstream">Upstream source</string>
     <string name="licenses_close">Close</string>
+    <string name="github" translatable="false">GitHub</string>
+    <string name="github_url" translatable="false">https://github.com/yniyniyni/phonestick</string>
 
     <string name="file_picker_nofile">None</string>
 
