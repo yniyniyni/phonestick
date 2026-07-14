@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dark scheme — a real M3 scheme, not inverted colors. -->
+<resources>
+    <color name="md_primary">#A0D49B</color>
+    <color name="md_on_primary">#073911</color>
+    <color name="md_primary_container">#235024</color>
+    <color name="md_on_primary_container">#BCF0B4</color>
+    <color name="md_inverse_primary">#3B6939</color>
+
+    <color name="md_secondary">#BACCB3</color>
+    <color name="md_on_secondary">#253423</color>
+    <color name="md_secondary_container">#3B4B38</color>
+    <color name="md_on_secondary_container">#D5E8CE</color>
+
+    <color name="md_tertiary">#A1CED4</color>
+    <color name="md_on_tertiary">#00363B</color>
+    <color name="md_tertiary_container">#1E4D52</color>
+    <color name="md_on_tertiary_container">#BCEBF0</color>
+
+    <color name="md_error">#FFB4AB</color>
+    <color name="md_on_error">#690005</color>
+    <color name="md_error_container">#93000A</color>
+    <color name="md_on_error_container">#FFDAD6</color>
+
+    <color name="md_surface">#10140F</color>
+    <color name="md_on_surface">#E0E4DA</color>
+    <color name="md_surface_dim">#10140F</color>
+    <color name="md_surface_bright">#363A34</color>
+    <color name="md_surface_container_lowest">#0B0F0A</color>
+    <color name="md_surface_container_low">#181D17</color>
+    <color name="md_surface_container">#1C211B</color>
+    <color name="md_surface_container_high">#272B25</color>
+    <color name="md_surface_container_highest">#313630</color>
+    <color name="md_surface_variant">#424940</color>
+    <color name="md_on_surface_variant">#C2C8BC</color>
+    <color name="md_inverse_surface">#E0E4DA</color>
+    <color name="md_inverse_on_surface">#2D322C</color>
+
+    <color name="md_outline">#8C9388</color>
+    <color name="md_outline_variant">#424940</color>
+</resources>

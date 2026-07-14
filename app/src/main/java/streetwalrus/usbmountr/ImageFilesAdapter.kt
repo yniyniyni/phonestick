@@ -1,19 +1,32 @@
 package streetwalrus.usbmountr
 
-import android.app.Activity
-import android.content.Intent
-import android.net.Uri
 import android.view.LayoutInflater
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.color.MaterialColors
+import com.google.android.material.elevation.SurfaceColors
+import com.google.android.material.shape.ShapeAppearanceModel
 import java.io.File
 
-class ImageFilesAdapter(directory: File, val activity: Activity) : RecyclerView.Adapter<ImageFilesAdapter.ImageFilesViewHolder>() {
-    private val TAG = "ImageFilesAdapter"
-    private var fileList = directory.listFiles()!!
+class ImageFilesAdapter(
+        private val directory: File,
+        private val activity: ImageChooserActivity,
+        private val selectedPath: String?
+) : RecyclerView.Adapter<ImageFilesAdapter.ImageFilesViewHolder>() {
+
+    private var fileList = listFiles()
+
+    private fun listFiles(): List<File> =
+            (directory.listFiles() ?: emptyArray()).filter { it.isFile }.sortedBy { it.name }
+
+    fun refresh() {
+        fileList = listFiles()
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageFilesViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.image_chooser_row, parent, false)
@@ -25,53 +38,45 @@ class ImageFilesAdapter(directory: File, val activity: Activity) : RecyclerView.
     }
 
     override fun onBindViewHolder(holder: ImageFilesViewHolder, position: Int) {
-        try {
-            if (position >= fileList.size) {
-                android.util.Log.w(TAG, "Position $position is out of bounds for fileList size ${fileList.size}")
-                return
-            }
+        val context = holder.view.context
+        val file = fileList[position]
+        val sizeMib = file.length().toDouble() / (1 shl 20)
 
-            val file = fileList[position]
-            val size = try {
-                if(file.isDirectory)
-                    0.0
-                else
-                    file.length().toDouble() / (1 shl 20)
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error getting file size for: ${file.path}", e)
-                0.0
-            }
+        holder.filename.text = file.name
+        holder.fileSize.text = context.getString(R.string.image_chooser_filesize_mib, sizeMib)
 
-            try {
-                holder.filename.text = file.name
-                holder.fileSize.text = holder.fileSize.context.getString(R.string.image_chooser_filesize_mib, size)
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting file info in view holder", e)
-                holder.filename.text = "Error loading file"
-                holder.fileSize.text = "0.0 MiB"
-            }
+        // Expressive grouped rounding: outer corners of the group are large,
+        // inner corners small.
+        val shapeStyle = when {
+            fileList.size == 1 -> R.style.ShapeAppearance_PhoneStick_ListItem_Single
+            position == 0 -> R.style.ShapeAppearance_PhoneStick_ListItem_First
+            position == fileList.size - 1 -> R.style.ShapeAppearance_PhoneStick_ListItem_Last
+            else -> R.style.ShapeAppearance_PhoneStick_ListItem_Middle
+        }
+        holder.card.shapeAppearanceModel =
+                ShapeAppearanceModel.builder(context, shapeStyle, 0).build()
 
-            if(file.isFile) {
-                holder.view.setOnClickListener {
-                    try {
-                        val result = Intent()
-                        result.putExtra("path", file.path)
-                        activity.setResult(Activity.RESULT_OK, result)
-                        activity.finish()
-                    } catch (e: Exception) {
-                        android.util.Log.e(TAG, "Error handling file selection: ${e.message}", e)
-                        Toast.makeText(activity, activity.getString(R.string.file_error_access, e.message), Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Critical error in onBindViewHolder: ${e.message}", e)
+        val selected = file.path == selectedPath
+        holder.card.setCardBackgroundColor(
+                if (selected) MaterialColors.getColor(holder.card, R.attr.colorSecondaryContainer)
+                else SurfaceColors.SURFACE_1.getColor(context))
+        val contentColor = MaterialColors.getColor(holder.card,
+                if (selected) R.attr.colorOnSecondaryContainer else R.attr.colorOnSurface)
+        val supportingColor = MaterialColors.getColor(holder.card,
+                if (selected) R.attr.colorOnSecondaryContainer else R.attr.colorOnSurfaceVariant)
+        holder.filename.setTextColor(contentColor)
+        holder.fileSize.setTextColor(supportingColor)
+        holder.icon.setColorFilter(supportingColor)
+
+        holder.view.setOnClickListener {
+            activity.returnSelection(file.path)
         }
     }
 
     class ImageFilesViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+        val card = view as MaterialCardView
+        val icon = view.findViewById<ImageView>(R.id.row_icon)!!
         val filename = view.findViewById<TextView>(R.id.filename)!!
         val fileSize = view.findViewById<TextView>(R.id.file_size)!!
     }
-
 }

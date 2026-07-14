@@ -2,25 +2,73 @@ package streetwalrus.usbmountr
 
 import android.app.Activity
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.AsyncTask
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.color.MaterialColors
+import com.google.android.material.elevation.SurfaceColors
+import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.snackbar.Snackbar
 import eu.chainfire.libsuperuser.Shell
+import java.io.File
 
-class MainActivity : Activity() {
+class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
 
-    private var mPrefs: HostPreferenceFragment? = null
+    private lateinit var mPrefs: SharedPreferences
+
+    private lateinit var statusCard: MaterialCardView
+    private lateinit var statusBlob: ImageView
+    private lateinit var statusHeadline: TextView
+    private lateinit var statusSupporting: TextView
+    private lateinit var imageFileSummary: TextView
+    private lateinit var roSwitch: MaterialSwitch
+
+    private var mounted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setSupportActionBar(findViewById<MaterialToolbar>(R.id.toolbar))
 
-        mPrefs = fragmentManager.findFragmentById(R.id.prefs) as HostPreferenceFragment
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        statusCard = findViewById(R.id.status_card)
+        statusBlob = findViewById(R.id.status_blob)
+        statusHeadline = findViewById(R.id.status_headline)
+        statusSupporting = findViewById(R.id.status_supporting)
+        imageFileSummary = findViewById(R.id.image_file_summary)
+        roSwitch = findViewById(R.id.ro_switch)
+
+        // Surface-container ladder, dynamic-color aware (re-themes under Monet).
+        val rowColor = SurfaceColors.SURFACE_1.getColor(this)
+        findViewById<MaterialCardView>(R.id.row_image).setCardBackgroundColor(rowColor)
+        findViewById<MaterialCardView>(R.id.row_ro).setCardBackgroundColor(rowColor)
+
+        findViewById<MaterialCardView>(R.id.row_image).setOnClickListener {
+            val intent = Intent(this, ImageChooserActivity::class.java)
+            intent.putExtra(ImageChooserActivity.EXTRA_SELECTED, sourceFile())
+            startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE)
+        }
+
+        roSwitch.isChecked = mPrefs.getBoolean(RO_KEY, true)
+        roSwitch.setOnCheckedChangeListener { _, checked ->
+            mPrefs.edit().putBoolean(RO_KEY, checked).apply()
+        }
+        findViewById<MaterialCardView>(R.id.row_ro).setOnClickListener { roSwitch.toggle() }
+
+        updateImageFileRow()
+        updateStatusHero()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -41,21 +89,63 @@ class MainActivity : Activity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
-        val appContext = applicationContext as UsbMountrApplication
-        appContext.onActivityResult(requestCode, resultCode, resultData)
+        super.onActivityResult(requestCode, resultCode, resultData)
+        if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
+            val path = resultData?.getStringExtra("path") ?: return
+            mPrefs.edit().putString(SOURCE_KEY, path).apply()
+            updateImageFileRow()
+            updateStatusHero()
+        }
+    }
+
+    private fun sourceFile() = mPrefs.getString(SOURCE_KEY, "") ?: ""
+
+    private fun updateImageFileRow() {
+        val path = sourceFile()
+        imageFileSummary.text =
+                if (path.isEmpty()) getString(R.string.file_picker_nofile) else File(path).name
+    }
+
+    private fun updateStatusHero() {
+        val headlineColor: Int
+        val supportingColor: Int
+        if (mounted) {
+            statusCard.setCardBackgroundColor(
+                    MaterialColors.getColor(statusCard, R.attr.colorPrimaryContainer))
+            headlineColor = MaterialColors.getColor(statusCard, R.attr.colorOnPrimaryContainer)
+            supportingColor = headlineColor
+            statusBlob.alpha = 1f
+            statusHeadline.setText(R.string.status_mounted)
+            statusSupporting.text = sourceFile()
+        } else {
+            statusCard.setCardBackgroundColor(SurfaceColors.SURFACE_2.getColor(this))
+            headlineColor = MaterialColors.getColor(statusCard, R.attr.colorOnSurface)
+            supportingColor = MaterialColors.getColor(statusCard, R.attr.colorOnSurfaceVariant)
+            statusBlob.alpha = 0.35f
+            statusHeadline.setText(R.string.status_not_mounted)
+            statusSupporting.setText(R.string.status_hint)
+        }
+        statusHeadline.setTextColor(headlineColor)
+        statusSupporting.setTextColor(supportingColor)
+    }
+
+    private fun showSnackbar(message: CharSequence) {
+        Snackbar.make(findViewById(R.id.activity_main), message, Snackbar.LENGTH_LONG).show()
     }
 
     @Suppress("unused")
     fun onServeClicked(@Suppress("UNUSED_PARAMETER") v: View) {
+        val rawFile = sourceFile()
+        if (rawFile.isEmpty()) {
+            showSnackbar(getString(R.string.status_hint))
+            return
+        }
+
         // Escape the file name to avoid bugs in the shell
         // Could use some finer filters but who cares
-        val file = "(.)".toRegex().replace(
-                mPrefs!!.preferenceManager.sharedPreferences
-                        .getString(mPrefs!!.SOURCE_KEY, ""),
-                "\\\\$1")
+        val file = "(.)".toRegex().replace(rawFile, "\\\\$1")
 
-        val ro = if (mPrefs!!.preferenceManager.sharedPreferences
-                .getBoolean(mPrefs!!.RO_KEY, true)) "1" else "0"
+        val ro = if (mPrefs.getBoolean(RO_KEY, true)) "1" else "0"
 
         UsbScript().execute(file, ro, "1")
     }
@@ -65,16 +155,17 @@ class MainActivity : Activity() {
         UsbScript().execute("", "1", "0")
     }
 
-    inner class UsbScript : AsyncTask<String, Void, Int>() {
-        override fun doInBackground(vararg params: String): Int {
-            val usb = "/sys/class/android_usb/android0"
+    inner class UsbScript : AsyncTask<String, Void, CharSequence>() {
+        private var newMountState: Boolean? = null
+
+        override fun doInBackground(vararg params: String): CharSequence {
             val file = params[0]
             val ro = params[1]
             val enable = params[2]
             try {
                 if (enable != "0") {
                     try {
-                        return if (!(Shell.SU.run(arrayOf(
+                        val output = Shell.SU.run(arrayOf(
                                 "SWY_MOUNT_FILE=$file",
                                 "SWY_MOUNT_CDROM='n'",
                                 "if [ $ro == 1 ]",
@@ -84,6 +175,7 @@ class MainActivity : Activity() {
                                 "SWY_MOUNT_READ_ONLY='n'",
                                 "fi",
                                 "CONFIGFS=`mount -t configfs | head -n1 | cut -d' ' -f 3`",
+                                "if [ -z \"\$CONFIGFS\" ] || [ ! -d \"\$CONFIGFS/usb_gadget\" ]; then echo unsupported; exit 0; fi",
                                 "mkdir \$CONFIGFS/usb_gadget/swy # swy: create a new gadget",
                                 "cd    \$CONFIGFS/usb_gadget/swy # swy: enter the folder",
 
@@ -120,20 +212,28 @@ class MainActivity : Activity() {
                                 "# swy: note: `getprop sys.usb.controller` == `ls /sys/class/udc`",
                                 "getprop sys.usb.controller > UDC",
                                 "setprop sys.usb.state mass_storage",
-                                "echo success"
-                        ))?.isEmpty() ?: true)) {
-                            R.string.host_success
-                        } else {
-                            R.string.host_noroot
+                                "# swy: only report success if the gadget actually bound to a controller",
+                                "[ -s UDC ] && echo success || echo bindfail"
+                        ))
+                        return when {
+                            output == null || output.isEmpty() -> getString(R.string.host_noroot)
+                            output.contains("unsupported") -> getString(R.string.host_unsupported)
+                            output.contains("bindfail") -> getString(R.string.host_bind_failed)
+                            output.contains("success") -> {
+                                newMountState = true
+                                getString(R.string.host_success)
+                            }
+                            else -> getString(R.string.host_error_generic, output.joinToString("\n"))
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Error enabling USB gadget: ${e.message}", e)
-                        return R.string.host_error_enable
+                        return getString(R.string.host_error_enable, e.message)
                     }
                 } else { // unmount
                     try {
-                        return if (!(Shell.SU.run(arrayOf(
+                        val output = Shell.SU.run(arrayOf(
                                 "CONFIGFS=`mount -t configfs | head -n1 | cut -d' ' -f 3`",
+                                "if [ -z \"\$CONFIGFS\" ] || [ ! -d \"\$CONFIGFS/usb_gadget\" ]; then echo unsupported; exit 0; fi",
                                 "cd    \$CONFIGFS/usb_gadget/swy # swy: enter the folder",
 
                                 "# swy: detach the gadget from the physical USB port",
@@ -151,23 +251,33 @@ class MainActivity : Activity() {
                                 "rmdir strings/0x409                      #swy: deallocate the gadget strings",
                                 "cd .. && rmdir swy                       #swy: remove the now-empty gadget",
                                 "echo success"
-                        ))?.isEmpty() ?: true)) {
-                            R.string.host_disable_success
-                        } else {
-                            R.string.host_noroot
+                        ))
+                        return when {
+                            output == null || output.isEmpty() -> getString(R.string.host_noroot)
+                            output.contains("unsupported") -> getString(R.string.host_unsupported)
+                            output.contains("success") -> {
+                                newMountState = false
+                                getString(R.string.host_disable_success)
+                            }
+                            else -> getString(R.string.host_error_generic, output.joinToString("\n"))
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Error disabling USB gadget: ${e.message}", e)
-                        return R.string.host_error_disable
+                        return getString(R.string.host_error_disable, e.message)
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Critical error in USB script execution: ${e.message}", e)
-                return R.string.host_error_critical
+                return getString(R.string.host_error_critical, e.message)
             }
         }
-        override fun onPostExecute(result: Int) {
-            Toast.makeText(applicationContext, getString(result), Toast.LENGTH_SHORT).show()
+
+        override fun onPostExecute(result: CharSequence) {
+            newMountState?.let {
+                mounted = it
+                updateStatusHero()
+            }
+            showSnackbar(result)
         }
     }
 }

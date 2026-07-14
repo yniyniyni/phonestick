@@ -4,14 +4,13 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.widget.Toast;
 import android.os.storage.StorageManager;
+import android.os.storage.StorageVolume;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import java.lang.reflect.Method;
-import java.lang.reflect.Array;
 import android.text.TextUtils;
 
 public class PathResolver {
@@ -19,10 +18,8 @@ public class PathResolver {
 
     public static String getPath(Context context, Uri uri) {
         try {
-            final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
             // DocumentProvider
-            if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            if (DocumentsContract.isDocumentUri(context, uri)) {
                 // ExternalStorageProvider
                 if (isExternalStorageDocument(uri)) {
                     final String docId = DocumentsContract.getDocumentId(uri);
@@ -32,41 +29,25 @@ public class PathResolver {
                     if ("primary".equalsIgnoreCase(type)) {
                         return Environment.getExternalStorageDirectory() + "/" + split[1];
                     } else {
-                        // Below logic is how External Storage provider build URI for documents
-                        // Based on http://stackoverflow.com/questions/28605278/android-5-sd-card-label and https://gist.github.com/prasad321/9852037
+                        // Secondary volumes (SD cards): match the volume by UUID.
                         StorageManager mStorageManager = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
 
                         try {
-                            Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
-                            Method getVolumeList = mStorageManager.getClass().getMethod("getVolumeList");
-                            Method getUuid = storageVolumeClazz.getMethod("getUuid");
-                            Method getState = storageVolumeClazz.getMethod("getState");
-                            Method getPath = storageVolumeClazz.getMethod("getPath");
-                            Method isPrimary = storageVolumeClazz.getMethod("isPrimary");
-                            Method isEmulated = storageVolumeClazz.getMethod("isEmulated");
-
-                            Object result = getVolumeList.invoke(mStorageManager);
-
-                            final int length = Array.getLength(result);
-                            for (int i = 0; i < length; i++) {
-                                Object storageVolumeElement = Array.get(result, i);
-                                //String uuid = (String) getUuid.invoke(storageVolumeElement);
-
-                                final boolean mounted = Environment.MEDIA_MOUNTED.equals(getState.invoke(storageVolumeElement))
-                                        || Environment.MEDIA_MOUNTED_READ_ONLY.equals(getState.invoke(storageVolumeElement));
-
-                                //if the media is not mounted, we need not get the volume details
+                            for (StorageVolume volume : mStorageManager.getStorageVolumes()) {
+                                final String state = volume.getState();
+                                final boolean mounted = Environment.MEDIA_MOUNTED.equals(state)
+                                        || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state);
                                 if (!mounted) continue;
 
                                 //Primary storage is already handled.
-                                if ((Boolean)isPrimary.invoke(storageVolumeElement) && (Boolean)isEmulated.invoke(storageVolumeElement)) continue;
+                                if (volume.isPrimary() && volume.isEmulated()) continue;
 
-                                String uuid = (String) getUuid.invoke(storageVolumeElement);
-
-                                if (uuid != null && uuid.equals(type))
-                                {
-                                    String res =getPath.invoke(storageVolumeElement) + "/" +split[1];
-                                    return res;
+                                String uuid = volume.getUuid();
+                                if (uuid != null && uuid.equals(type)) {
+                                    // StorageVolume.getDirectory() only became public in
+                                    // API 30; reflect the hidden getPath() below that.
+                                    Method getPath = StorageVolume.class.getMethod("getPath");
+                                    return getPath.invoke(volume) + "/" + split[1];
                                 }
                             }
                         }

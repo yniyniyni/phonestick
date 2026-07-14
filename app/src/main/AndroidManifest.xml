@@ -12,9 +12,6 @@
                 android:name=".ImageChooserActivity"
                 android:label="@string/title_activity_image_chooser"
                 android:parentActivityName=".MainActivity">
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="streetwalrus.usbmountr.MainActivity"/>
         </activity>
         <activity android:name=".MainActivity">
             <intent-filter>

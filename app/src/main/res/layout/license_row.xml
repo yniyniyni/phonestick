@@ -2,7 +2,6 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/row_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="4dp"
@@ -24,11 +23,10 @@
         android:paddingBottom="12dp">
 
         <ImageView
-            android:id="@+id/row_icon"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:importantForAccessibility="no"
-            app:srcCompat="@drawable/ic_hard_drive"
+            app:srcCompat="@drawable/ic_license"
             app:tint="?attr/colorOnSurfaceVariant" />
 
         <LinearLayout
@@ -40,24 +38,20 @@
             android:layout_marginStart="16dp">
 
             <TextView
-                android:id="@+id/filename"
+                android:id="@+id/license_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="monospace"
-                android:textSize="14sp"
-                android:singleLine="true"
-                android:ellipsize="middle"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
                 android:textColor="?attr/colorOnSurface"
-                tools:text="archlinux-2017.01.01-dual.iso" />
+                tools:text="libsuperuser" />
 
             <TextView
-                android:id="@+id/file_size"
+                android:id="@+id/license_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="monospace"
-                android:textSize="12sp"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                tools:text="742.1 MiB" />
+                tools:text="Apache 2.0" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

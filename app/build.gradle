@@ -1,7 +1,6 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    id 'kotlin-android-extensions'
 }
 
 def getVersionName = { ->
@@ -32,10 +31,12 @@ def getVersionName = { ->
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 33
     defaultConfig {
         applicationId "jinbaittai.phonestick"
-        minSdkVersion 19
+        // The configfs USB gadget this app drives only exists on Treble-era
+        // kernels; the stock `g1` gadget it swaps out is an Android 8+ thing.
+        minSdkVersion 26
         targetSdkVersion 28
         versionCode 8
         versionName getVersionName()
@@ -62,6 +63,11 @@ android {
     }
     lintOptions {
         checkReleaseBuilds false
+        // The fork's locales (de/fr/it/lt) have never been complete translations.
+        disable 'MissingTranslation'
+        // Not distributed through Google Play; raising targetSdk past 28 changes
+        // storage behavior this root app depends on.
+        disable 'ExpiredTargetSdkVersion'
     }
     namespace 'streetwalrus.usbmountr'
 }
@@ -70,7 +76,9 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'com.github.Chainfire:libsuperuser:1.1.1'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
 }
 repositories {
     mavenCentral()

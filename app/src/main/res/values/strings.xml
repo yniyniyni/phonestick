@@ -3,6 +3,7 @@
 
     <string name="licenses">Licenses</string>
     <string name="licenses_upstream">Upstream source</string>
+    <string name="licenses_close">Close</string>
 
     <string name="file_picker_nofile">None</string>
 
@@ -12,6 +13,9 @@
     <string name="host_ro_summary">Prevent the PC from writing to the image</string>
     <string name="host_serve">Mount</string>
     <string name="host_disable">Unmount</string>
+    <string name="status_mounted">Mounted</string>
+    <string name="status_not_mounted">Not mounted</string>
+    <string name="status_hint">Pick an image, then mount</string>
     <string name="host_help">This application will try to coexist with Android\'s USB services,
         but the system is very likely to override its effects at any moment.
     </string>
@@ -23,16 +27,18 @@
     <string name="image_chooser_copying_dialog">Copying image file</string>
 
     <!-- Toast messages -->
-    <string name="host_error_generic">Error del host: %1$s</string>
-    <string name="host_error_enable">Error al habilitar el gadget USB: %1$s</string>
-    <string name="host_error_disable">Error al deshabilitar el gadget USB: %1$s</string>
-    <string name="host_error_critical">Error crítico en operación USB: %1$s</string>
-    <string name="file_error_copy">Error al copiar archivo: %1$s</string>
-    <string name="file_error_access">Error al acceder al archivo: %1$s</string>
-    <string name="storage_error_access">Error al acceder al almacenamiento: %1$s</string>
-    <string name="path_resolver_error">Error al resolver ruta: %1$s</string>
+    <string name="host_error_generic">Host error: %1$s</string>
+    <string name="host_error_enable">Error enabling USB gadget: %1$s</string>
+    <string name="host_error_disable">Error disabling USB gadget: %1$s</string>
+    <string name="host_error_critical">Critical error in USB operation: %1$s</string>
+    <string name="file_error_copy">Error copying file: %1$s</string>
+    <string name="file_error_access">Error accessing file: %1$s</string>
+    <string name="storage_error_access">Error accessing storage: %1$s</string>
+    <string name="path_resolver_error">Error resolving path: %1$s</string>
     <string name="host_success">The device should now show up on your PC</string>
     <string name="host_disable_success">The device should now disappear from your PC</string>
     <string name="host_noroot">Couldn\'t get root access</string>
+    <string name="host_unsupported">This kernel has no configfs USB gadget support</string>
+    <string name="host_bind_failed">Couldn\'t attach the gadget to the USB controller</string>
     <string name="file_picker_denied">Please grant access to storage to access this file</string>
 </resources>
