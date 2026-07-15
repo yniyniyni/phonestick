@@ -25,6 +25,7 @@
     <!-- ImageChooserActivity -->
     <string name="title_activity_image_chooser">Image files</string>
     <string name="image_chooser_filesize_mib">%1$.1f MiB</string>
+    <string name="image_chooser_filesize_os">%1$.1f MiB · %2$s</string>
     <string name="image_chooser_add">Add new image</string>
     <string name="image_chooser_copying_dialog">Copying image file</string>
 

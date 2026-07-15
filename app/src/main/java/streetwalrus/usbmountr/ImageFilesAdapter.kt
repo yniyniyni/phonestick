@@ -41,9 +41,14 @@ class ImageFilesAdapter(
         val context = holder.view.context
         val file = fileList[position]
         val sizeMib = file.length().toDouble() / (1 shl 20)
+        val os = OsDetector.detect(file)
 
         holder.filename.text = file.name
-        holder.fileSize.text = context.getString(R.string.image_chooser_filesize_mib, sizeMib)
+        holder.fileSize.text =
+                if (os != null) context.getString(R.string.image_chooser_filesize_os,
+                        sizeMib, context.getString(os.nameRes))
+                else context.getString(R.string.image_chooser_filesize_mib, sizeMib)
+        holder.icon.setImageResource(os?.iconRes ?: R.drawable.ic_hard_drive)
 
         // Expressive grouped rounding: outer corners of the group are large,
         // inner corners small.
