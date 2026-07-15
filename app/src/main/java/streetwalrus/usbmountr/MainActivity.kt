@@ -60,6 +60,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<MaterialCardView>(R.id.row_image).setOnClickListener {
             val intent = Intent(this, ImageChooserActivity::class.java)
             intent.putExtra(ImageChooserActivity.EXTRA_SELECTED, sourceFile())
+            if (mounted) {
+                // mountedPath can be null when state was restored after process
+                // death; fall back to the source path like updateStatusHero does.
+                intent.putExtra(ImageChooserActivity.EXTRA_MOUNTED, mountedPath ?: sourceFile())
+            }
             startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE)
         }
 
@@ -83,6 +88,18 @@ class MainActivity : AppCompatActivity() {
 
         updateImageFileRow()
         updateStatusHero()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // The selected image can be deleted from the library screen (which is
+        // left via back, so no activity result fires). Clear the stale
+        // selection instead of letting Mount target a ghost path.
+        val path = sourceFile()
+        if (path.isNotEmpty() && !File(path).exists()) {
+            mPrefs.edit().remove(SOURCE_KEY).apply()
+            updateImageFileRow()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
