@@ -20,22 +20,26 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileInputStream
 
 class ImageChooserActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_SELECTED = "selected"
+        const val EXTRA_MOUNTED = "mounted"
         private const val REQUEST_ADD_IMAGE = 1
         private const val TAG = "ImageChooserActivity"
     }
 
     private var directory = File("/")
+    private var mountedPath: String? = null
     private lateinit var adapter: ImageFilesAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         directory = filesDir
+        mountedPath = intent.getStringExtra(EXTRA_MOUNTED)
         setContentView(R.layout.activity_image_chooser)
 
         setSupportActionBar(findViewById<MaterialToolbar>(R.id.toolbar))
@@ -78,6 +82,29 @@ class ImageChooserActivity : AppCompatActivity() {
         result.putExtra("path", path)
         setResult(Activity.RESULT_OK, result)
         finish()
+    }
+
+    fun confirmDelete(file: File) {
+        if (file.path == mountedPath) {
+            // Deleting the image backing an active USB mount would break the
+            // next mount and frees no space until unmount anyway.
+            Snackbar.make(findViewById(R.id.activity_image_chooser),
+                    R.string.image_chooser_delete_mounted, Snackbar.LENGTH_LONG).show()
+            return
+        }
+        val sizeMib = file.length().toDouble() / (1 shl 20)
+        MaterialAlertDialogBuilder(this)
+                .setTitle(file.name)
+                .setMessage(getString(R.string.image_chooser_delete_message, sizeMib))
+                .setPositiveButton(R.string.image_chooser_delete) { _, _ ->
+                    if (!file.delete()) {
+                        Snackbar.make(findViewById(R.id.activity_image_chooser),
+                                R.string.image_chooser_delete_failed, Snackbar.LENGTH_LONG).show()
+                    }
+                    adapter.refresh()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
     }
 
     private class CopyInTask(private val activity: ImageChooserActivity, private val directory: File)

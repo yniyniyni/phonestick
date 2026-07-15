@@ -78,6 +78,10 @@ class ImageFilesAdapter(
         holder.view.setOnClickListener {
             activity.returnSelection(file.path)
         }
+        holder.view.setOnLongClickListener {
+            activity.confirmDelete(file)
+            true
+        }
     }
 
     class ImageFilesViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
