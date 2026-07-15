@@ -46,6 +46,7 @@
     <string name="file_picker_denied">Please grant access to storage to access this file</string>
 
     <!-- Detected-OS display names: brand names, not translatable -->
+    <string name="os_alpine" translatable="false">Alpine Linux</string>
     <string name="os_ubuntu" translatable="false">Ubuntu</string>
     <string name="os_debian" translatable="false">Debian</string>
     <string name="os_fedora" translatable="false">Fedora</string>

@@ -7,6 +7,7 @@ import java.io.IOException
 import java.io.RandomAccessFile
 
 enum class DetectedOs(@StringRes val nameRes: Int, @DrawableRes val iconRes: Int) {
+    ALPINE(R.string.os_alpine, R.drawable.ic_os_alpine),
     UBUNTU(R.string.os_ubuntu, R.drawable.ic_os_ubuntu),
     DEBIAN(R.string.os_debian, R.drawable.ic_os_debian),
     FEDORA(R.string.os_fedora, R.drawable.ic_os_fedora),
@@ -31,6 +32,7 @@ object OsDetector {
 
     // First match wins: specific distros before the generic "linux" catch-all.
     private val patterns = listOf(
+            Regex("alpine") to DetectedOs.ALPINE,
             Regex("ubuntu") to DetectedOs.UBUNTU, // also [klx]ubuntu flavors
             Regex("debian") to DetectedOs.DEBIAN,
             Regex("fedora") to DetectedOs.FEDORA,

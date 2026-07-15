@@ -48,7 +48,9 @@ class ImageFilesAdapter(
                 if (os != null) context.getString(R.string.image_chooser_filesize_os,
                         sizeMib, context.getString(os.nameRes))
                 else context.getString(R.string.image_chooser_filesize_mib, sizeMib)
-        holder.icon.setImageResource(os?.iconRes ?: R.drawable.ic_hard_drive)
+        // Undetected images still get the Tux glyph; only distro-specific
+        // glyphs come from detection.
+        holder.icon.setImageResource(os?.iconRes ?: R.drawable.ic_os_linux)
 
         // Expressive grouped rounding: outer corners of the group are large,
         // inner corners small.

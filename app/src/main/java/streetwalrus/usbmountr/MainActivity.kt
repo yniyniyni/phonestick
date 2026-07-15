@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
                 if (os != null) getString(R.string.image_file_summary_os,
                         file.name, getString(os.nameRes))
                 else file.name
-        imageFileIcon.setImageResource(os?.iconRes ?: R.drawable.ic_album)
+        imageFileIcon.setImageResource(os?.iconRes ?: R.drawable.ic_os_linux)
     }
 
     private fun updateStatusHero() {

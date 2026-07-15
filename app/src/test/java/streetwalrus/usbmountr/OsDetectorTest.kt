@@ -65,6 +65,18 @@ class OsDetectorTest {
     }
 
     @Test
+    fun `alpine volume label detected`() {
+        val file = isoWithLabel("alpine-std 3.24.1 x86_64")
+        assertEquals(DetectedOs.ALPINE, OsDetector.detect(file))
+    }
+
+    @Test
+    fun `alpine filename detected`() {
+        val file = writeFixture("alpine-standard-3.24.1-x86_64.iso", ByteArray(1000))
+        assertEquals(DetectedOs.ALPINE, OsDetector.detect(file))
+    }
+
+    @Test
     fun `generic linux fallback when no specific distro matches`() {
         val file = isoWithLabel("Some Linux 1.0")
         assertEquals(DetectedOs.LINUX_GENERIC, OsDetector.detect(file))
