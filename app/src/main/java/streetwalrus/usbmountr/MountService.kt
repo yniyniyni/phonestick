@@ -93,6 +93,8 @@ class MountService : Service() {
         }
     }
 
+    // Main-thread only (activity clicks / onStartCommand): the state guard
+    // below relies on Dispatchers.Main.immediate serialization.
     fun mount(path: String, ro: Boolean, cdrom: Boolean) {
         if (_state.value !is MountState.Unmounted) return
         _state.value = MountState.Busy
@@ -111,6 +113,7 @@ class MountService : Service() {
         }
     }
 
+    // Main-thread only — see mount().
     fun unmount() {
         val previous = _state.value
         if (previous !is MountState.Mounted) return
@@ -146,7 +149,8 @@ class MountService : Service() {
         // Mark the service as started so it outlives the activity binding.
         startService(Intent(this, MountService::class.java))
         val openApp = PendingIntent.getActivity(this, 0,
-                Intent(this, MainActivity::class.java),
+                Intent(this, MainActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val unmountAction = PendingIntent.getService(this, 1,
                 Intent(this, MountService::class.java).setAction(ACTION_UNMOUNT),
