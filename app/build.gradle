@@ -33,7 +33,7 @@ def getVersionName = { ->
 android {
     compileSdkVersion 33
     defaultConfig {
-        applicationId "jinbaittai.phonestick"
+        applicationId "art.yniyniyni.phonestick"
         // The configfs USB gadget this app drives only exists on Treble-era
         // kernels; the stock `g1` gadget it swaps out is an Android 8+ thing.
         minSdkVersion 26
