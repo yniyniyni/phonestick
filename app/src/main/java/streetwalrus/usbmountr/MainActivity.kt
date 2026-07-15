@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusHeadline: TextView
     private lateinit var statusSupporting: TextView
     private lateinit var imageFileSummary: TextView
+    private lateinit var imageFileIcon: ImageView
     private lateinit var roSwitch: MaterialSwitch
 
     private var mounted = false
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity() {
         statusHeadline = findViewById(R.id.status_headline)
         statusSupporting = findViewById(R.id.status_supporting)
         imageFileSummary = findViewById(R.id.image_file_summary)
+        imageFileIcon = findViewById(R.id.image_file_icon)
         roSwitch = findViewById(R.id.ro_switch)
 
         // Surface-container ladder, dynamic-color aware (re-themes under Monet).
@@ -103,8 +105,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateImageFileRow() {
         val path = sourceFile()
+        if (path.isEmpty()) {
+            imageFileSummary.text = getString(R.string.file_picker_nofile)
+            imageFileIcon.setImageResource(R.drawable.ic_album)
+            return
+        }
+        val file = File(path)
+        val os = OsDetector.detect(file)
         imageFileSummary.text =
-                if (path.isEmpty()) getString(R.string.file_picker_nofile) else File(path).name
+                if (os != null) getString(R.string.image_file_summary_os,
+                        file.name, getString(os.nameRes))
+                else file.name
+        imageFileIcon.setImageResource(os?.iconRes ?: R.drawable.ic_album)
     }
 
     private fun updateStatusHero() {
