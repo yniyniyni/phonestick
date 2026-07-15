@@ -13,6 +13,8 @@
     <string name="host_source_file">Image file</string>
     <string name="host_ro">Read-only</string>
     <string name="host_ro_summary">Prevent the PC from writing to the image</string>
+    <string name="host_cdrom">CD-ROM mode</string>
+    <string name="host_cdrom_summary">Present as a USB CD-ROM drive; some firmwares only boot optical media</string>
     <string name="host_serve">Mount</string>
     <string name="host_disable">Unmount</string>
     <string name="status_mounted">Mounted</string>

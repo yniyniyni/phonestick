@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var imageFileSummary: TextView
     private lateinit var imageFileIcon: ImageView
     private lateinit var roSwitch: MaterialSwitch
+    private lateinit var cdromSwitch: MaterialSwitch
     private lateinit var serveButton: MaterialButton
     private lateinit var disableButton: MaterialButton
 
@@ -76,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         imageFileSummary = findViewById(R.id.image_file_summary)
         imageFileIcon = findViewById(R.id.image_file_icon)
         roSwitch = findViewById(R.id.ro_switch)
+        cdromSwitch = findViewById(R.id.cdrom_switch)
         serveButton = findViewById(R.id.serve)
         disableButton = findViewById(R.id.disable)
 
@@ -83,6 +85,7 @@ class MainActivity : AppCompatActivity() {
         val rowColor = SurfaceColors.SURFACE_1.getColor(this)
         findViewById<MaterialCardView>(R.id.row_image).setCardBackgroundColor(rowColor)
         findViewById<MaterialCardView>(R.id.row_ro).setCardBackgroundColor(rowColor)
+        findViewById<MaterialCardView>(R.id.row_cdrom).setCardBackgroundColor(rowColor)
 
         findViewById<MaterialCardView>(R.id.row_image).setOnClickListener {
             val intent = Intent(this, ImageChooserActivity::class.java)
@@ -98,6 +101,12 @@ class MainActivity : AppCompatActivity() {
             mPrefs.edit().putBoolean(RO_KEY, checked).apply()
         }
         findViewById<MaterialCardView>(R.id.row_ro).setOnClickListener { roSwitch.toggle() }
+
+        cdromSwitch.isChecked = mPrefs.getBoolean(CDROM_KEY, false)
+        cdromSwitch.setOnCheckedChangeListener { _, checked ->
+            mPrefs.edit().putBoolean(CDROM_KEY, checked).apply()
+        }
+        findViewById<MaterialCardView>(R.id.row_cdrom).setOnClickListener { cdromSwitch.toggle() }
 
         findViewById<View>(R.id.footer_licenses).setOnClickListener {
             startActivity(Intent(this, LicenseActivity::class.java))
