@@ -37,6 +37,7 @@
     <string name="image_chooser_delete_failed">Could not delete this image.</string>
     <string name="image_chooser_add">Add new image</string>
     <string name="image_chooser_copying_dialog">Copying image file</string>
+    <string name="image_chooser_no_space">Not enough free space: the image needs %1$.1f MiB, only %2$.1f MiB available</string>
 
     <!-- Toast messages -->
     <string name="host_error_generic">Host error: %1$s</string>
