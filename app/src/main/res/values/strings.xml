@@ -42,4 +42,17 @@
     <string name="host_unsupported">This kernel has no configfs USB gadget support</string>
     <string name="host_bind_failed">Couldn\'t attach the gadget to the USB controller</string>
     <string name="file_picker_denied">Please grant access to storage to access this file</string>
+
+    <!-- Detected-OS display names: brand names, not translatable -->
+    <string name="os_ubuntu" translatable="false">Ubuntu</string>
+    <string name="os_debian" translatable="false">Debian</string>
+    <string name="os_fedora" translatable="false">Fedora</string>
+    <string name="os_arch" translatable="false">Arch Linux</string>
+    <string name="os_mint" translatable="false">Linux Mint</string>
+    <string name="os_opensuse" translatable="false">openSUSE</string>
+    <string name="os_kali" translatable="false">Kali Linux</string>
+    <string name="os_manjaro" translatable="false">Manjaro</string>
+    <string name="os_freebsd" translatable="false">FreeBSD</string>
+    <string name="os_windows" translatable="false">Windows</string>
+    <string name="os_linux" translatable="false">Linux</string>
 </resources>
