@@ -59,7 +59,7 @@
                     android:layout_gravity="center"
                     android:importantForAccessibility="no"
                     app:srcCompat="@drawable/ic_usb"
-                    app:tint="@android:color/white" />
+                    app:tint="?attr/colorOnPrimary" />
             </FrameLayout>
 
             <LinearLayout

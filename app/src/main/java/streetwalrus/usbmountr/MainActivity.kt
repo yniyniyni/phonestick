@@ -27,12 +27,14 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var statusCard: MaterialCardView
     private lateinit var statusBlob: ImageView
+    private lateinit var statusIcon: ImageView
     private lateinit var statusHeadline: TextView
     private lateinit var statusSupporting: TextView
     private lateinit var imageFileSummary: TextView
     private lateinit var roSwitch: MaterialSwitch
 
     private var mounted = false
+    private var mountedPath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +44,7 @@ class MainActivity : AppCompatActivity() {
 
         statusCard = findViewById(R.id.status_card)
         statusBlob = findViewById(R.id.status_blob)
+        statusIcon = findViewById(R.id.status_icon)
         statusHeadline = findViewById(R.id.status_headline)
         statusSupporting = findViewById(R.id.status_supporting)
         imageFileSummary = findViewById(R.id.image_file_summary)
@@ -71,8 +74,19 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.github_url))))
         }
 
+        if (savedInstanceState != null) {
+            mounted = savedInstanceState.getBoolean(STATE_MOUNTED, false)
+            mountedPath = savedInstanceState.getString(STATE_MOUNTED_PATH)
+        }
+
         updateImageFileRow()
         updateStatusHero()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_MOUNTED, mounted)
+        outState.putString(STATE_MOUNTED_PATH, mountedPath)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
@@ -102,13 +116,17 @@ class MainActivity : AppCompatActivity() {
             headlineColor = MaterialColors.getColor(statusCard, R.attr.colorOnPrimaryContainer)
             supportingColor = headlineColor
             statusBlob.alpha = 1f
+            statusIcon.imageTintList = android.content.res.ColorStateList.valueOf(
+                    MaterialColors.getColor(statusCard, R.attr.colorOnPrimary))
             statusHeadline.setText(R.string.status_mounted)
-            statusSupporting.text = sourceFile()
+            statusSupporting.text = mountedPath ?: sourceFile()
         } else {
             statusCard.setCardBackgroundColor(SurfaceColors.SURFACE_2.getColor(this))
             headlineColor = MaterialColors.getColor(statusCard, R.attr.colorOnSurface)
             supportingColor = MaterialColors.getColor(statusCard, R.attr.colorOnSurfaceVariant)
             statusBlob.alpha = 0.35f
+            statusIcon.imageTintList = android.content.res.ColorStateList.valueOf(
+                    MaterialColors.getColor(statusCard, R.attr.colorOnSurfaceVariant))
             statusHeadline.setText(R.string.status_not_mounted)
             statusSupporting.setText(R.string.status_hint)
         }
@@ -134,7 +152,7 @@ class MainActivity : AppCompatActivity() {
 
         val ro = if (mPrefs.getBoolean(RO_KEY, true)) "1" else "0"
 
-        UsbScript().execute(file, ro, "1")
+        UsbScript(rawFile).execute(file, ro, "1")
     }
 
     @Suppress("unused")
@@ -142,7 +160,7 @@ class MainActivity : AppCompatActivity() {
         UsbScript().execute("", "1", "0")
     }
 
-    inner class UsbScript : AsyncTask<String, Void, CharSequence>() {
+    inner class UsbScript(private val rawPath: String? = null) : AsyncTask<String, Void, CharSequence>() {
         private var newMountState: Boolean? = null
 
         override fun doInBackground(vararg params: String): CharSequence {
@@ -262,9 +280,15 @@ class MainActivity : AppCompatActivity() {
         override fun onPostExecute(result: CharSequence) {
             newMountState?.let {
                 mounted = it
+                mountedPath = if (it) rawPath else null
                 updateStatusHero()
             }
             showSnackbar(result)
         }
+    }
+
+    companion object {
+        private const val STATE_MOUNTED = "mounted"
+        private const val STATE_MOUNTED_PATH = "mounted_path"
     }
 }
