@@ -33,7 +33,7 @@ Theming follows Material You: on Android 12+ the whole app (light and dark) re-c
 ./gradlew installDebug     # build + install on a connected device
 ```
 
-Standard Gradle project (AGP 7.3.1, Kotlin). Release builds are signed with the debug keystore by default — swap in a real keystore for distribution.
+Standard Gradle project (AGP 7.3.1, Kotlin). Local release builds are signed with the debug keystore; tagged GitHub releases carry an APK signed with the project key by the `Release APK` workflow (requires the `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` repo secrets).
 
 ## Credits
 
