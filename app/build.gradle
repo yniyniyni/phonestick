@@ -38,7 +38,7 @@ android {
         // kernels; the stock `g1` gadget it swaps out is an Android 8+ thing.
         minSdkVersion 26
         targetSdkVersion 28
-        versionCode 9
+        versionCode 10
         versionName getVersionName()
     }
     signingConfigs {
