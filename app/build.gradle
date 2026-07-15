@@ -75,6 +75,8 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
     implementation 'com.github.Chainfire:libsuperuser:1.1.1'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
