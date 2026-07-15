@@ -42,13 +42,21 @@ android {
         versionName getVersionName()
     }
     signingConfigs {
-        // Sign release builds with the standard Android debug keystore so the
-        // APK is installable. Swap this out for a real keystore for distribution.
+        // CI sets PHONESTICK_KEYSTORE* to sign releases with the real key;
+        // local builds fall back to the debug keystore so the APK is
+        // installable without any setup.
         release {
-            storeFile file("${System.getProperty('user.home')}/.android/debug.keystore")
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            if (System.getenv('PHONESTICK_KEYSTORE')) {
+                storeFile file(System.getenv('PHONESTICK_KEYSTORE'))
+                storePassword System.getenv('PHONESTICK_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('PHONESTICK_KEY_ALIAS')
+                keyPassword System.getenv('PHONESTICK_KEY_PASSWORD')
+            } else {
+                storeFile file("${System.getProperty('user.home')}/.android/debug.keystore")
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
+            }
         }
     }
     buildTypes {
@@ -75,6 +83,8 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
     implementation 'com.github.Chainfire:libsuperuser:1.1.1'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
