@@ -36,7 +36,6 @@
     <string name="file_error_copy">Error copying file: %1$s</string>
     <string name="file_error_access">Error accessing file: %1$s</string>
     <string name="storage_error_access">Error accessing storage: %1$s</string>
-    <string name="path_resolver_error">Error resolving path: %1$s</string>
     <string name="host_success">The device should now show up on your PC</string>
     <string name="host_disable_success">The device should now disappear from your PC</string>
     <string name="host_noroot">Couldn\'t get root access</string>

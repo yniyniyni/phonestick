@@ -67,29 +67,10 @@ class ImageChooserActivity : AppCompatActivity() {
         if (requestCode != REQUEST_ADD_IMAGE || resultCode != Activity.RESULT_OK) return
         val uri = data?.data ?: return
 
-        // Prefer a direct root-readable filesystem path — the mass_storage gadget reads
-        // the image by path, so no copy is needed. Fall back to copying the file into
-        // the app's internal image library.
-        val resolved = try {
-            PathResolver.getPath(this, uri)
-        } catch (e: Exception) {
-            Log.w(TAG, "Error resolving path", e)
-            null
-        }
-
-        if (resolved != null && isRootReadablePath(resolved) && File(resolved).exists()) {
-            Log.d(TAG, "Using resolved path $resolved")
-            returnSelection(resolved)
-            return
-        }
-
-        Log.d(TAG, "Path unresolved ($resolved); copying into internal storage")
+        // Copy the picked file into the app's internal image library. The root
+        // mass_storage gadget reads the image by path, and a library copy can't be
+        // moved or deleted out from under an active mount.
         CopyInTask(this, directory).execute(uri)
-    }
-
-    private fun isRootReadablePath(path: String): Boolean {
-        return path.startsWith("/storage/") || path.startsWith("/sdcard") ||
-                path.startsWith("/mnt/") || path.startsWith("/data/")
     }
 
     fun returnSelection(path: String) {
