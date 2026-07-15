@@ -14,6 +14,8 @@ The app drives the Linux **configfs USB gadget** over a root shell: it creates a
 - Android 8.0+ with a configfs USB gadget kernel (any Treble-era device; the app tells you if the kernel lacks it)
 - Patience with Android: the system may re-assert control of the USB port at any moment — the app coexists with Android's USB services on a best-effort basis
 
+Tested on a **Pixel 8** rooted with [KernelSU-Next](https://github.com/KernelSU-Next/KernelSU-Next), on Android 16 and 17. Other devices/root solutions should work as long as the kernel has the configfs USB gadget and `su` behaves normally — reports welcome.
+
 ## Guide
 
 1. **Add an image** — tap the *Image file* row, then the **+** button, and pick an ISO/IMG. It's copied into the app's own image library (so it can't be moved or deleted while mounted).
