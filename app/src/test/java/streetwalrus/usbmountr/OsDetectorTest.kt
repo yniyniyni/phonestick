@@ -77,6 +77,32 @@ class OsDetectorTest {
     }
 
     @Test
+    fun `wrong magic with valid type byte uses filename`() {
+        val data = ByteArray(PVD_OFFSET + 2048)
+        data[PVD_OFFSET] = 1 // descriptor type: primary
+        "XX001".toByteArray(Charsets.ISO_8859_1).copyInto(data, PVD_OFFSET + 1)
+        val file = writeFixture("debian-13.iso", data)
+        assertEquals(DetectedOs.DEBIAN, OsDetector.detect(file))
+    }
+
+    @Test
+    fun `wrong type byte with valid magic uses filename`() {
+        val data = ByteArray(PVD_OFFSET + 2048)
+        data[PVD_OFFSET] = 2 // not the primary descriptor type
+        "CD001".toByteArray(Charsets.ISO_8859_1).copyInto(data, PVD_OFFSET + 1)
+        "Ubuntu 24.04".padEnd(32).toByteArray(Charsets.ISO_8859_1)
+                .copyInto(data, PVD_OFFSET + 40, 0, 32)
+        val file = writeFixture("kali-2026.iso", data)
+        assertEquals(DetectedOs.KALI, OsDetector.detect(file))
+    }
+
+    @Test
+    fun `blank volume label falls back to filename`() {
+        val file = isoWithLabel("", name = "manjaro-xfce.iso")
+        assertEquals(DetectedOs.MANJARO, OsDetector.detect(file))
+    }
+
+    @Test
     fun `result is cached for an unchanged file`() {
         val file = isoWithLabel("Ubuntu 24.04 LTS amd64", name = "cached.iso")
         val size = file.length()

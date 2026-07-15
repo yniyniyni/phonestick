@@ -1,10 +1,12 @@
 package streetwalrus.usbmountr
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
 
-enum class DetectedOs(val nameRes: Int, val iconRes: Int) {
+enum class DetectedOs(@StringRes val nameRes: Int, @DrawableRes val iconRes: Int) {
     UBUNTU(R.string.os_ubuntu, R.drawable.ic_os_ubuntu),
     DEBIAN(R.string.os_debian, R.drawable.ic_os_debian),
     FEDORA(R.string.os_fedora, R.drawable.ic_os_fedora),
